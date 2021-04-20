@@ -13,6 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * @author: RZR
+ */
+/*
+ *                                                     __----~~~~~~~~~~~------___
+ *                                    .  .   ~~//====......          __--~ ~~
+ *                    -.            \_|//     |||\\  ~~~~~~::::... /~
+ *                 ___-==_       _-~o~  \/    |||  \\            _/~~-
+ *         __---~~~.==~||\=_    -_--~/_-~|-   |\\   \\        _/~
+ *     _-~~     .=~    |  \\-_    '-~7  /-   /  ||    \      /
+ *   .~       .~       |   \\ -_    /  /-   /   ||      \   /
+ *  /  ____  /         |     \\ ~-_/  /|- _/   .||       \ /
+ *  |~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+ *           '         ~-|      /|    |-~\~~       __--~~
+ *                       |-~~-_/ |    |   ~\_   _-~            /\
+ *                            /  \     \__   \/~                \__
+ *                        _--~ _/ | .-~~____--~-/                  ~~==.
+ *                       ((->/~   '.|||' -_|    ~~-/ ,              . _||
+ *                                  -_     ~\      ~~---l__i__i__i--~~_/
+ *                                  _-~-__   ~)  \--______________--~~
+ *                                //.-~~~-~_--~- |-------~~~~~~~~
+ *                                       //.-~~~--\
+ *                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *                               神兽保佑            永无BUG
+ */
 
 package net.micode.notes.ui;
 
@@ -75,7 +101,7 @@ public class NoteItemData {
     private boolean mIsOnlyOneItem;
     private boolean mIsOneNoteFollowingFolder;
     private boolean mIsMultiNotesFollowingFolder;
-
+    //初始化NoteItemData，主要利用光标cursor获取的东西
     public NoteItemData(Context context, Cursor cursor) {
         mId = cursor.getLong(ID_COLUMN);
         mAlertDate = cursor.getLong(ALERTED_DATE_COLUMN);
@@ -91,11 +117,11 @@ public class NoteItemData {
         mType = cursor.getInt(TYPE_COLUMN);
         mWidgetId = cursor.getInt(WIDGET_ID_COLUMN);
         mWidgetType = cursor.getInt(WIDGET_TYPE_COLUMN);
-
+        //初始化电话号码的信息
         mPhoneNumber = "";
         if (mParentId == Notes.ID_CALL_RECORD_FOLDER) {
             mPhoneNumber = DataUtils.getCallNumberByNoteId(context.getContentResolver(), mId);
-            if (!TextUtils.isEmpty(mPhoneNumber)) {
+            if (!TextUtils.isEmpty(mPhoneNumber)) {//mphonenumber里有符合字符串，则用contart功能连接
                 mName = Contact.getContact(context, mPhoneNumber);
                 if (mName == null) {
                     mName = mPhoneNumber;
@@ -108,26 +134,27 @@ public class NoteItemData {
         }
         checkPostion(cursor);
     }
-
+    //根据鼠标的位置设置标记，和位置
     private void checkPostion(Cursor cursor) {
         mIsLastItem = cursor.isLast() ? true : false;
         mIsFirstItem = cursor.isFirst() ? true : false;
         mIsOnlyOneItem = (cursor.getCount() == 1);
+        //初始化“多重子文件”“单一子文件”2个标记
         mIsMultiNotesFollowingFolder = false;
         mIsOneNoteFollowingFolder = false;
 
-        if (mType == Notes.TYPE_NOTE && !mIsFirstItem) {
+        if (mType == Notes.TYPE_NOTE && !mIsFirstItem) {//若是note格式并且不是第一个元素
             int position = cursor.getPosition();
-            if (cursor.moveToPrevious()) {
+            if (cursor.moveToPrevious()) {/获取光标位置后看上一行
                 if (cursor.getInt(TYPE_COLUMN) == Notes.TYPE_FOLDER
-                        || cursor.getInt(TYPE_COLUMN) == Notes.TYPE_SYSTEM) {
+                        || cursor.getInt(TYPE_COLUMN) == Notes.TYPE_SYSTEM) {//若光标满足系统或note格式
                     if (cursor.getCount() > (position + 1)) {
-                        mIsMultiNotesFollowingFolder = true;
+                        mIsMultiNotesFollowingFolder = true;//若是数据行数大于但前位置+1则设置成正确
                     } else {
-                        mIsOneNoteFollowingFolder = true;
+                        mIsOneNoteFollowingFolder = true;//否则单一文件夹标记为true
                     }
                 }
-                if (!cursor.moveToNext()) {
+                if (!cursor.moveToNext()) {//若不能再往下走则报错
                     throw new IllegalStateException("cursor move to previous but can't move back");
                 }
             }
@@ -213,7 +240,7 @@ public class NoteItemData {
     public boolean hasAlert() {
         return (mAlertDate > 0);
     }
-
+    //若数据父id为保存至文件夹模式的id且满足电话号码单元不为空，则isCallRecord为true
     public boolean isCallRecord() {
         return (mParentId == Notes.ID_CALL_RECORD_FOLDER && !TextUtils.isEmpty(mPhoneNumber));
     }

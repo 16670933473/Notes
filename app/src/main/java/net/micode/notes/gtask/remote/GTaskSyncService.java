@@ -13,6 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * @author: RZR
+ */
+/*
+ *                                                     __----~~~~~~~~~~~------___
+ *                                    .  .   ~~//====......          __--~ ~~
+ *                    -.            \_|//     |||\\  ~~~~~~::::... /~
+ *                 ___-==_       _-~o~  \/    |||  \\            _/~~-
+ *         __---~~~.==~||\=_    -_--~/_-~|-   |\\   \\        _/~
+ *     _-~~     .=~    |  \\-_    '-~7  /-   /  ||    \      /
+ *   .~       .~       |   \\ -_    /  /-   /   ||      \   /
+ *  /  ____  /         |     \\ ~-_/  /|- _/   .||       \ /
+ *  |~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+ *           '         ~-|      /|    |-~\~~       __--~~
+ *                       |-~~-_/ |    |   ~\_   _-~            /\
+ *                            /  \     \__   \/~                \__
+ *                        _--~ _/ | .-~~____--~-/                  ~~==.
+ *                       ((->/~   '.|||' -_|    ~~-/ ,              . _||
+ *                                  -_     ~\      ~~---l__i__i__i--~~_/
+ *                                  _-~-__   ~)  \--______________--~~
+ *                                //.-~~~-~_--~- |-------~~~~~~~~
+ *                                       //.-~~~--\
+ *                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *                               神兽保佑            永无BUG
+ */
 
 package net.micode.notes.gtask.remote;
 
@@ -22,7 +48,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-
+/*
+ * Service是在一段不定的时间运行在后台，不和用户交互的应用组件
+ * 主要方法：
+ * private void startSync()  启动一个同步工作
+ * private void cancelSync() 取消同步
+ * public void onCreate()
+ * public int onStartCommand(Intent intent, int flags, int startId)  service生命周期的组成部分，相当于重启service（比如在被暂停之后），而不是创建一个新的service
+ * public void onLowMemory()  在没有内存的情况下如果存在service则结束掉这的service
+ * public IBinder onBind()
+ * public void sendBroadcast(String msg)   发送同步的相关通知
+ * public static void startSync(Activity activity)
+ * public static void cancelSync(Context context)
+ * public static boolean isSyncing()  判读是否在进行同步
+ * public static String getProgressString()  获取当前进度的信息
+ */
 public class GTaskSyncService extends Service {
     public final static String ACTION_STRING_NAME = "sync_action_type";
 
@@ -41,7 +81,7 @@ public class GTaskSyncService extends Service {
     private static GTaskASyncTask mSyncTask = null;
 
     private static String mSyncProgress = "";
-
+    //开始一个同步的工作
     private void startSync() {
         if (mSyncTask == null) {
             mSyncTask = new GTaskASyncTask(this, new GTaskASyncTask.OnCompleteListener() {
@@ -52,7 +92,7 @@ public class GTaskSyncService extends Service {
                 }
             });
             sendBroadcast("");
-            mSyncTask.execute();
+            mSyncTask.execute();//这个函数让任务是以单线程队列方式或线程池队列方式运行
         }
     }
 
@@ -63,7 +103,7 @@ public class GTaskSyncService extends Service {
     }
 
     @Override
-    public void onCreate() {
+    public void onCreate() {//初始化一个service
         mSyncTask = null;
     }
 
@@ -72,6 +112,7 @@ public class GTaskSyncService extends Service {
         Bundle bundle = intent.getExtras();
         if (bundle != null && bundle.containsKey(ACTION_STRING_NAME)) {
             switch (bundle.getInt(ACTION_STRING_NAME, ACTION_INVALID)) {
+                //两种情况，开始同步或者取消同步
                 case ACTION_START_SYNC:
                     startSync();
                     break;
@@ -81,7 +122,7 @@ public class GTaskSyncService extends Service {
                 default:
                     break;
             }
-            return START_STICKY;
+            return START_STICKY;//等待新的intent来是这个service继续运行
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -99,20 +140,20 @@ public class GTaskSyncService extends Service {
 
     public void sendBroadcast(String msg) {
         mSyncProgress = msg;
-        Intent intent = new Intent(GTASK_SERVICE_BROADCAST_NAME);
-        intent.putExtra(GTASK_SERVICE_BROADCAST_IS_SYNCING, mSyncTask != null);
+        Intent intent = new Intent(GTASK_SERVICE_BROADCAST_NAME);//创建一个新的Intent
+        intent.putExtra(GTASK_SERVICE_BROADCAST_IS_SYNCING, mSyncTask != null);//附加INTENT中的相应参数的值
         intent.putExtra(GTASK_SERVICE_BROADCAST_PROGRESS_MSG, msg);
-        sendBroadcast(intent);
+        sendBroadcast(intent);//发送这个通知
     }
 
-    public static void startSync(Activity activity) {
+    public static void startSync(Activity activity) {//执行一个service，service的内容里的同步动作就是开始同步
         GTaskManager.getInstance().setActivityContext(activity);
         Intent intent = new Intent(activity, GTaskSyncService.class);
         intent.putExtra(GTaskSyncService.ACTION_STRING_NAME, GTaskSyncService.ACTION_START_SYNC);
         activity.startService(intent);
     }
 
-    public static void cancelSync(Context context) {
+    public static void cancelSync(Context context) {//执行一个service，service的内容里的同步动作就是取消同步
         Intent intent = new Intent(context, GTaskSyncService.class);
         intent.putExtra(GTaskSyncService.ACTION_STRING_NAME, GTaskSyncService.ACTION_CANCEL_SYNC);
         context.startService(intent);

@@ -13,6 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * @author: RZR
+ */
+/*
+ *                                                     __----~~~~~~~~~~~------___
+ *                                    .  .   ~~//====......          __--~ ~~
+ *                    -.            \_|//     |||\\  ~~~~~~::::... /~
+ *                 ___-==_       _-~o~  \/    |||  \\            _/~~-
+ *         __---~~~.==~||\=_    -_--~/_-~|-   |\\   \\        _/~
+ *     _-~~     .=~    |  \\-_    '-~7  /-   /  ||    \      /
+ *   .~       .~       |   \\ -_    /  /-   /   ||      \   /
+ *  /  ____  /         |     \\ ~-_/  /|- _/   .||       \ /
+ *  |~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+ *           '         ~-|      /|    |-~\~~       __--~~
+ *                       |-~~-_/ |    |   ~\_   _-~            /\
+ *                            /  \     \__   \/~                \__
+ *                        _--~ _/ | .-~~____--~-/                  ~~==.
+ *                       ((->/~   '.|||' -_|    ~~-/ ,              . _||
+ *                                  -_     ~\      ~~---l__i__i__i--~~_/
+ *                                  _-~-__   ~)  \--______________--~~
+ *                                //.-~~~-~_--~- |-------~~~~~~~~
+ *                                       //.-~~~--\
+ *                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *                               神兽保佑            永无BUG
+ */
 
 package net.micode.notes.gtask.data;
 
@@ -36,15 +62,19 @@ import org.json.JSONObject;
 
 
 public class SqlData {
+    /*
+     * 功能描述：得到类的简写名称存入字符串TAG中
+     * 实现过程：调用getSimpleName ()函数
+     */
     private static final String TAG = SqlData.class.getSimpleName();
 
-    private static final int INVALID_ID = -99999;
-
+    private static final int INVALID_ID = -99999;//为mDataId置初始值-99999
+    // 集合了interface DataColumns中所有SF常量
     public static final String[] PROJECTION_DATA = new String[] {
             DataColumns.ID, DataColumns.MIME_TYPE, DataColumns.CONTENT, DataColumns.DATA1,
             DataColumns.DATA3
     };
-
+    //以下五个变量作为sql表中5列的编号
     public static final int DATA_ID_COLUMN = 0;
 
     public static final int DATA_MIME_TYPE_COLUMN = 1;
@@ -56,7 +86,7 @@ public class SqlData {
     public static final int DATA_CONTENT_DATA_3_COLUMN = 4;
 
     private ContentResolver mContentResolver;
-
+    //判断是否直接用Content生成，是为true，否则为false
     private boolean mIsCreate;
 
     private long mDataId;
@@ -70,7 +100,11 @@ public class SqlData {
     private String mDataContentData3;
 
     private ContentValues mDiffDataValues;
-
+    /*
+     * 功能描述：构造函数，用于初始化数据
+     * 参数注解：mContentResolver用于获取ContentProvider提供的数据
+     * 参数注解： mIsCreate表征当前数据是用哪种方式创建（两种构造函数的参数不同）
+     */
     public SqlData(Context context) {
         mContentResolver = context.getContentResolver();
         mIsCreate = true;
@@ -81,14 +115,21 @@ public class SqlData {
         mDataContentData3 = "";
         mDiffDataValues = new ContentValues();
     }
-
+    /*
+     * 功能描述：构造函数，初始化数据
+     * 参数注解：mContentResolver用于获取ContentProvider提供的数据
+     * 参数注解： mIsCreate表征当前数据是用哪种方式创建（两种构造函数的参数不同）
+     */
     public SqlData(Context context, Cursor c) {
         mContentResolver = context.getContentResolver();
         mIsCreate = false;
         loadFromCursor(c);
         mDiffDataValues = new ContentValues();
     }
-
+    /*
+     * 功能描述：从光标处加载数据
+     * 从当前的光标处将五列的数据加载到该类的对象
+     */
     private void loadFromCursor(Cursor c) {
         mDataId = c.getLong(DATA_ID_COLUMN);
         mDataMimeType = c.getString(DATA_MIME_TYPE_COLUMN);
@@ -96,8 +137,9 @@ public class SqlData {
         mDataContentData1 = c.getLong(DATA_CONTENT_DATA_1_COLUMN);
         mDataContentData3 = c.getString(DATA_CONTENT_DATA_3_COLUMN);
     }
-
+    //设置用于共享的数据，并提供异常抛出与处理机制
     public void setContent(JSONObject js) throws JSONException {
+        //如果传入的JSONObject对象中有DataColumns.ID这一项，则设置，否则设为INVALID_ID
         long dataId = js.has(DataColumns.ID) ? js.getLong(DataColumns.ID) : INVALID_ID;
         if (mIsCreate || mDataId != dataId) {
             mDiffDataValues.put(DataColumns.ID, dataId);
@@ -129,12 +171,13 @@ public class SqlData {
         }
         mDataContentData3 = dataContentData3;
     }
-
+    //获取共享的数据内容，并提供异常抛出与处理机制
     public JSONObject getContent() throws JSONException {
         if (mIsCreate) {
             Log.e(TAG, "it seems that we haven't created this in database yet");
             return null;
         }
+        //创建JSONObject对象。并将相关数据放入其中，并返回。
         JSONObject js = new JSONObject();
         js.put(DataColumns.ID, mDataId);
         js.put(DataColumns.MIME_TYPE, mDataMimeType);
@@ -143,7 +186,7 @@ public class SqlData {
         js.put(DataColumns.DATA3, mDataContentData3);
         return js;
     }
-
+    //commit函数用于把当前造作所做的修改保存到数据库
     public void commit(long noteId, boolean validateVersion, long version) {
 
         if (mIsCreate) {
@@ -182,7 +225,7 @@ public class SqlData {
         mDiffDataValues.clear();
         mIsCreate = false;
     }
-
+    //获取当前Id
     public long getId() {
         return mDataId;
     }

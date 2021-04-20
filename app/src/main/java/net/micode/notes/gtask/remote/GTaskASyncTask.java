@@ -14,6 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * @author: RZR
+ */
+/*
+ *                                                     __----~~~~~~~~~~~------___
+ *                                    .  .   ~~//====......          __--~ ~~
+ *                    -.            \_|//     |||\\  ~~~~~~::::... /~
+ *                 ___-==_       _-~o~  \/    |||  \\            _/~~-
+ *         __---~~~.==~||\=_    -_--~/_-~|-   |\\   \\        _/~
+ *     _-~~     .=~    |  \\-_    '-~7  /-   /  ||    \      /
+ *   .~       .~       |   \\ -_    /  /-   /   ||      \   /
+ *  /  ____  /         |     \\ ~-_/  /|- _/   .||       \ /
+ *  |~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+ *           '         ~-|      /|    |-~\~~       __--~~
+ *                       |-~~-_/ |    |   ~\_   _-~            /\
+ *                            /  \     \__   \/~                \__
+ *                        _--~ _/ | .-~~____--~-/                  ~~==.
+ *                       ((->/~   '.|||' -_|    ~~-/ ,              . _||
+ *                                  -_     ~\      ~~---l__i__i__i--~~_/
+ *                                  _-~-__   ~)  \--______________--~~
+ *                                //.-~~~-~_--~- |-------~~~~~~~~
+ *                                       //.-~~~--\
+ *                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *                               神兽保佑            永无BUG
+ */
 
 package net.micode.notes.gtask.remote;
 
@@ -28,7 +54,13 @@ import net.micode.notes.R;
 import net.micode.notes.ui.NotesListActivity;
 import net.micode.notes.ui.NotesPreferenceActivity;
 
-
+/*异步操作类，实现GTask的异步操作过程
+ * 主要方法：
+ * private void showNotification(int tickerId, String content) 向用户提示当前同步的状态，是一个用于交互的方法
+ * protected Integer doInBackground(Void... unused) 此方法在后台线程执行，完成任务的主要工作，通常需要较长的时间
+ * protected void onProgressUpdate(String... progress)  可以使用进度条增加用户体验度。 此方法在主线程执行，用于显示任务执行的进度。
+ * protected void onPostExecute(Integer result)  相当于Handler 处理UI的方式，在这里面可以使用在doInBackground 得到的结果处理操作UI
+ */
 public class GTaskASyncTask extends AsyncTask<Void, String, Integer> {
 
     private static int GTASK_SYNC_NOTIFICATION_ID = 5234235;
@@ -57,7 +89,7 @@ public class GTaskASyncTask extends AsyncTask<Void, String, Integer> {
         mTaskManager.cancelSync();
     }
 
-    public void publishProgess(String message) {
+    public void publishProgess(String message) {// 发布进度单位，系统将会调用onProgressUpdate()方法更新这些值
         publishProgress(message);
     }
 
@@ -69,10 +101,10 @@ public class GTaskASyncTask extends AsyncTask<Void, String, Integer> {
         PendingIntent pendingIntent;
         if (tickerId != R.string.ticker_success) {
             pendingIntent = PendingIntent.getActivity(mContext, 0, new Intent(mContext,
-                    NotesPreferenceActivity.class), 0);
+                    NotesPreferenceActivity.class), 0);//如果同步不成功，那么从系统取得一个用于启动一个NotesPreferenceActivity的PendingIntent对象
         } else {
             pendingIntent = PendingIntent.getActivity(mContext, 0, new Intent(mContext,
-                    NotesListActivity.class), 0);
+                    NotesListActivity.class), 0);//如果同步成功，那么从系统取得一个用于启动一个NotesListActivity的PendingIntent对象
         }
         Notification notification = new Notification.Builder(mContext)
                 .setTicker(mContext.getText(tickerId))
@@ -86,7 +118,7 @@ public class GTaskASyncTask extends AsyncTask<Void, String, Integer> {
 //        notification.setLatestEventInfo(mContext, mContext.getString(R.string.app_name), content,
 //                pendingIntent);
 
-        mNotifiManager.notify(GTASK_SYNC_NOTIFICATION_ID, notification);
+        mNotifiManager.notify(GTASK_SYNC_NOTIFICATION_ID, notification);//通过NotificationManager对象的notify（）方法来执行一个notification的消息
     }
 
     @Override
@@ -99,13 +131,13 @@ public class GTaskASyncTask extends AsyncTask<Void, String, Integer> {
     @Override
     protected void onProgressUpdate(String... progress) {
         showNotification(R.string.ticker_syncing, progress[0]);
-        if (mContext instanceof GTaskSyncService) {
+        if (mContext instanceof GTaskSyncService) {//instanceof 判断mContext是否是GTaskSyncService的实例
             ((GTaskSyncService) mContext).sendBroadcast(progress[0]);
         }
     }
 
     @Override
-    protected void onPostExecute(Integer result) {
+    protected void onPostExecute(Integer result) {//用于在执行完后台任务后更新UI,显示结果
         if (result == GTaskManager.STATE_SUCCESS) {
             showNotification(R.string.ticker_success, mContext.getString(
                     R.string.success_sync_account, mTaskManager.getSyncAccount()));
@@ -117,11 +149,11 @@ public class GTaskASyncTask extends AsyncTask<Void, String, Integer> {
         } else if (result == GTaskManager.STATE_SYNC_CANCELLED) {
             showNotification(R.string.ticker_cancel, mContext
                     .getString(R.string.error_sync_cancelled));
-        }
+        }//几种不同情况下的结果显示
         if (mOnCompleteListener != null) {
             new Thread(new Runnable() {
 
-                public void run() {
+                public void run() {//完成后的操作，使用onComplete()将所有值都重新初始化，相当于完成一次操作
                     mOnCompleteListener.onComplete();
                 }
             }).start();

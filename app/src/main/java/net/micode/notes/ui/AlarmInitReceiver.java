@@ -13,6 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * @author: RZR
+ */
+/*
+ *                                                     __----~~~~~~~~~~~------___
+ *                                    .  .   ~~//====......          __--~ ~~
+ *                    -.            \_|//     |||\\  ~~~~~~::::... /~
+ *                 ___-==_       _-~o~  \/    |||  \\            _/~~-
+ *         __---~~~.==~||\=_    -_--~/_-~|-   |\\   \\        _/~
+ *     _-~~     .=~    |  \\-_    '-~7  /-   /  ||    \      /
+ *   .~       .~       |   \\ -_    /  /-   /   ||      \   /
+ *  /  ____  /         |     \\ ~-_/  /|- _/   .||       \ /
+ *  |~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+ *           '         ~-|      /|    |-~\~~       __--~~
+ *                       |-~~-_/ |    |   ~\_   _-~            /\
+ *                            /  \     \__   \/~                \__
+ *                        _--~ _/ | .-~~____--~-/                  ~~==.
+ *                       ((->/~   '.|||' -_|    ~~-/ ,              . _||
+ *                                  -_     ~\      ~~---l__i__i__i--~~_/
+ *                                  _-~-__   ~)  \--______________--~~
+ *                                //.-~~~-~_--~- |-------~~~~~~~~
+ *                                       //.-~~~--\
+ *                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *                               神兽保佑            永无BUG
+ */
 
 package net.micode.notes.ui;
 
@@ -34,18 +60,21 @@ public class AlarmInitReceiver extends BroadcastReceiver {
         NoteColumns.ID,
         NoteColumns.ALERTED_DATE
     };
-
+    //对数据库的操作，调用标签ID和闹钟时间
     private static final int COLUMN_ID                = 0;
     private static final int COLUMN_ALERTED_DATE      = 1;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         long currentDate = System.currentTimeMillis();
+        //System.currentTimeMillis()产生一个当前的毫秒
+        //这个毫秒其实就是自1970年1月1日0时起的毫秒数
         Cursor c = context.getContentResolver().query(Notes.CONTENT_NOTE_URI,
                 PROJECTION,
                 NoteColumns.ALERTED_DATE + ">? AND " + NoteColumns.TYPE + "=" + Notes.TYPE_NOTE,
                 new String[] { String.valueOf(currentDate) },
-                null);
+                //将long变量currentDate转化为字符串
+                null);//Cursor在这里的作用是通过查找数据库中的标签内容，找到和当前系统时间相等的标签
 
         if (c != null) {
             if (c.moveToFirst()) {
@@ -61,5 +90,8 @@ public class AlarmInitReceiver extends BroadcastReceiver {
             }
             c.close();
         }
+        //对于闹钟机制的启动，通常需要上面的几个步骤
+        //如新建Intent、PendingIntent以及AlarmManager等
+        //这里就是根据数据库里的闹钟时间创建一个闹钟机制
     }
 }

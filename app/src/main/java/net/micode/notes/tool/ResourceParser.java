@@ -13,6 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * @author: RZR
+ */
+/*
+ *                                                     __----~~~~~~~~~~~------___
+ *                                    .  .   ~~//====......          __--~ ~~
+ *                    -.            \_|//     |||\\  ~~~~~~::::... /~
+ *                 ___-==_       _-~o~  \/    |||  \\            _/~~-
+ *         __---~~~.==~||\=_    -_--~/_-~|-   |\\   \\        _/~
+ *     _-~~     .=~    |  \\-_    '-~7  /-   /  ||    \      /
+ *   .~       .~       |   \\ -_    /  /-   /   ||      \   /
+ *  /  ____  /         |     \\ ~-_/  /|- _/   .||       \ /
+ *  |~~    ~~|--~~~~--_ \     ~==-/   | \~--===~~        .\
+ *           '         ~-|      /|    |-~\~~       __--~~
+ *                       |-~~-_/ |    |   ~\_   _-~            /\
+ *                            /  \     \__   \/~                \__
+ *                        _--~ _/ | .-~~____--~-/                  ~~==.
+ *                       ((->/~   '.|||' -_|    ~~-/ ,              . _||
+ *                                  -_     ~\      ~~---l__i__i__i--~~_/
+ *                                  _-~-__   ~)  \--______________--~~
+ *                                //.-~~~-~_--~- |-------~~~~~~~~
+ *                                       //.-~~~--\
+ *                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *                               神兽保佑            永无BUG
+ */
 
 package net.micode.notes.tool;
 
@@ -21,7 +47,20 @@ import android.preference.PreferenceManager;
 
 import net.micode.notes.R;
 import net.micode.notes.ui.NotesPreferenceActivity;
-
+/*简介：字面意义是资源分析器，实际上就是获取资源并且在程序中使用，比如颜色图片等
+ * 实现方法：主要利用R.java这个类，其中包括
+ * R.id      组件资源引用
+ * R.drawable  图片资源 （被使用）
+ * R.layout  布局资源
+ * R.menu   菜单资源
+ * R.String  文字资源
+ * R.style    主题资源 （被使用）
+ * 在按顺序设置好相应的id后，就可以编写简单的getXXX函数获取需要的资源
+ *
+ * 特殊的变量 ：
+ * @BG_DEFAULT_COLOR 默认背景颜色（黄）
+ * BG_DEFAULT_FONT_SIZE 默认文本大小（中）
+ */
 public class ResourceParser {
 
     public static final int YELLOW           = 0;
@@ -64,7 +103,7 @@ public class ResourceParser {
             return BG_EDIT_TITLE_RESOURCES[id];
         }
     }
-
+    //直接获取默认的背景颜色
     public static int getDefaultBgId(Context context) {
         if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
                 NotesPreferenceActivity.PREFERENCE_SET_BG_COLOR_KEY, false)) {
@@ -161,7 +200,7 @@ public class ResourceParser {
             R.style.TextAppearanceLarge,
             R.style.TextAppearanceSuper
         };
-
+        //这里有一个容错的函数，防止输入的id大于资源总量，若如此，则自动返回默认的设置结果
         public static int getTexAppearanceResource(int id) {
             /**
              * HACKME: Fix bug of store the resource id in shared preference.
